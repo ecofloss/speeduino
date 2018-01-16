@@ -148,7 +148,9 @@ void setPinMapping(byte boardID)
       pinFan = A13; //Pin for the fan output
       pinLaunch = 12; //Can be overwritten below
       pinFlex = 2; // Flex sensor (Must be external interrupt enabled)
-
+      pinIPS = A15; //IPS input pin Idle Potentiometer Sensor
+      pinCTPS = 50; //The closed throttle position sensor pin
+      
       #if defined(CORE_TEENSY)
         pinTrigger = 23;
         pinStepperDir = 33;
@@ -580,6 +582,7 @@ void setPinMapping(byte boardID)
       pinMode(pinCLT, INPUT_ANALOG);
       pinMode(pinBat, INPUT_ANALOG);
       pinMode(pinBaro, INPUT_ANALOG);
+      pinMode(pinIPS, INPUT_ANALOG);
     #else
       pinMode(pinMAP, INPUT);
       pinMode(pinO2, INPUT);
@@ -589,12 +592,14 @@ void setPinMapping(byte boardID)
       pinMode(pinCLT, INPUT);
       pinMode(pinBat, INPUT);
       pinMode(pinBaro, INPUT);
+      pinMode(pinIPS, INPUT);
     #endif
   #endif
   pinMode(pinTrigger, INPUT);
   pinMode(pinTrigger2, INPUT);
   pinMode(pinTrigger3, INPUT);
   pinMode(pinFlex, INPUT_PULLUP); //Standard GM / Continental flex sensor requires pullup
+  pinMode(pinCTPS, INPUT);
   if (configPage3.lnchPullRes == true) {
     pinMode(pinLaunch, INPUT_PULLUP);
   }
@@ -602,6 +607,7 @@ void setPinMapping(byte boardID)
     pinMode(pinLaunch, INPUT);  //If Launch Pull Resistor is not set make input float.
   }
 
+  
   //These must come after the above pinMode statements
   triggerPri_pin_port = portInputRegister(digitalPinToPort(pinTrigger));
   triggerPri_pin_mask = digitalPinToBitMask(pinTrigger);

@@ -187,6 +187,12 @@ void readTPS()
   currentStatus.TPS_time = currentLoopTime;
 }
 
+void readIPS()//Idle Potentiometer Sensor
+{
+    analogRead(pinIPS);
+    byte tempIPS = fastMap1023toX(analogRead(pinIPS), 255); //Get the current raw TPS ADC value and map it into a byte
+}
+
 void readCLT()
 {
   unsigned int tempReading;

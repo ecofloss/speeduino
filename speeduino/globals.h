@@ -705,6 +705,8 @@ byte pinLaunch;
 byte pinIgnBypass; //The pin used for an ignition bypass (Optional)
 byte pinFlex; //Pin with the flex sensor attached
 byte pinBaro; //Pin that an external barometric pressure sensor is attached to (If used)
+byte pinIPS;//IPS input pin Idle Potentiometer Sensor
+byte pinCTPS;//The closed throttle position sensor pin
 
 // global variables // from speeduino.ino
 extern struct statuses currentStatus; // from speeduino.ino
