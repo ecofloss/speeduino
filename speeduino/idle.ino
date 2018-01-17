@@ -24,7 +24,7 @@ void initialiseIdle()
 
   #elif defined (CORE_TEENSY)
 
-    if( (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_CL) )
+    if( (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL_IPS_CTPS))
     {
     //FlexTimer 2 is used for idle
     FTM2_MODE |= FTM_MODE_WPDIS; // Write Protection Disable
@@ -190,6 +190,31 @@ void initialiseIdle()
       idlePID.SetMode(AUTOMATIC); //Turn PID on
       break;
 
+    case IAC_ALGORITHM_PWM_OL_IPS_CTPS:
+      //Case 6 is PWM open loop with IPS/CTPS
+      iacPWMTable.xSize = 10;
+      iacPWMTable.valueSize = SIZE_BYTE;
+      iacPWMTable.values = configPage3.iacOLPWMVal;
+      iacPWMTable.axisX = configPage3.iacBins;
+
+
+      iacCrankDutyTable.xSize = 4;
+      iacCrankDutyTable.valueSize = SIZE_BYTE;
+      iacCrankDutyTable.values = configPage3.iacCrankDuty;
+      iacCrankDutyTable.axisX = configPage3.iacCrankBins;
+
+      idle_pin_port = portOutputRegister(digitalPinToPort(pinIdle1));
+      idle_pin_mask = digitalPinToBitMask(pinIdle1);
+      idle2_pin_port = portOutputRegister(digitalPinToPort(pinIdle2));
+      idle2_pin_mask = digitalPinToBitMask(pinIdle2);
+      #if defined(CORE_STM32)
+        idle_pwm_max_count = 1000000L / (configPage3.idleFreq * 2); //Converts the frequency in Hz to the number of ticks (at 2uS) it takes to complete 1 cycle. Note that the frequency is divided by 2 coming from TS to allow for up to 5KHz
+      #else
+        idle_pwm_max_count = 1000000L / (16 * configPage3.idleFreq * 2); //Converts the frequency in Hz to the number of ticks (at 16uS) it takes to complete 1 cycle. Note that the frequency is divided by 2 coming from TS to allow for up to 512hz
+      #endif
+      enableIdle();
+      break;
+
     default:
       //Well this just shouldn't happen
       break;
@@ -299,6 +324,27 @@ void idleControl()
       }
       break;
 
+    case IAC_ALGORITHM_PWM_OL_IPS_CTPS:      //Case 6 is PWM open loop with IPS/CTPS
+      //Check for cranking pulsewidth
+      if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
+      {
+        //Currently cranking. Use the cranking table
+        currentStatus.idleDuty = table2D_getValue(&iacCrankDutyTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
+        idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+        idleOn = true;
+      }
+      else
+      {
+        //Standard running
+        currentStatus.idleDuty = table2D_getValue(&iacPWMTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
+        if( currentStatus.idleDuty == 0 ) { disableIdle(); break; }
+        enableIdle();
+        idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+        currentStatus.idleLoad = currentStatus.idleDuty >> 1;
+        idleOn = true;
+      }
+      break;
+
     default:
       //There really should be a valid idle type
       break;
@@ -386,7 +432,7 @@ static inline void doStep()
 //This function simply turns off the idle PWM and sets the pin low
 static inline void disableIdle()
 {
-  if( (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL) )
+  if( (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL_IPS_CTPS))
   {
     IDLE_TIMER_DISABLE();
     digitalWrite(pinIdle1, LOW);
@@ -406,7 +452,7 @@ static inline void disableIdle()
 //Typically this is enabling the PWM interrupt
 static inline void enableIdle()
 {
-  if( (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL) )
+  if( (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_CL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL) || (configPage3.iacAlgorithm == IAC_ALGORITHM_PWM_OL_IPS_CTPS) )
   {
     IDLE_TIMER_ENABLE();
   }
