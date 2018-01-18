@@ -191,6 +191,12 @@ void readIPS()//Idle Potentiometer Sensor
 {
     analogRead(pinIPS);
     byte tempIPS = fastMap1023toX(analogRead(pinIPS), 255); //Get the current raw TPS ADC value and map it into a byte
+    currentStatus.IPS = tempIPS;
+}
+
+void readCTPS()//Idle Potentiometer Sensor
+{
+    currentStatus.CTPS = digitalRead(pinCTPS);
 }
 
 void readCLT()

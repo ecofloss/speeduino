@@ -325,23 +325,57 @@ void idleControl()
       break;
 
     case IAC_ALGORITHM_PWM_OL_IPS_CTPS:      //Case 6 is PWM open loop with IPS/CTPS
+      readCTPS();
       //Check for cranking pulsewidth
       if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
       {
         //Currently cranking. Use the cranking table
-        currentStatus.idleDuty = table2D_getValue(&iacCrankDutyTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
-        idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
-        idleOn = true;
+        if ( (currentStatus.CTPS==false) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
+        {
+          readIPS();
+          currentStatus.idleDuty = table2D_getValue(&iacCrankDutyTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
+          if (2,5>currentStatus.IPS)
+            {
+              idle_pwm_target_value = percentage(currentStatus.idleDuty+10, idle_pwm_max_count);
+            }
+          else
+            {
+              if (2,5<currentStatus.IPS)
+                {
+                  idle_pwm_target_value = percentage(currentStatus.idleDuty-10, idle_pwm_max_count);        
+                }
+              else
+                {
+                  idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+                }
+            }
+          idleOn = true;
+        }  
       }
       else
       {
         //Standard running
-        currentStatus.idleDuty = table2D_getValue(&iacPWMTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
-        if( currentStatus.idleDuty == 0 ) { disableIdle(); break; }
-        enableIdle();
-        idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
-        currentStatus.idleLoad = currentStatus.idleDuty >> 1;
-        idleOn = true;
+        if ( (currentStatus.CTPS==false) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
+        {
+          readIPS();
+          currentStatus.idleDuty = table2D_getValue(&iacPWMTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
+          if (2,5>currentStatus.IPS)
+            {
+              idle_pwm_target_value = percentage(currentStatus.idleDuty+10, idle_pwm_max_count);
+            }
+          else
+            {
+              if (2,5<currentStatus.IPS)
+                {
+                  idle_pwm_target_value = percentage(currentStatus.idleDuty-10, idle_pwm_max_count);        
+                }
+              else
+                {
+                  idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+                }  
+            }
+          idleOn = true;
+        }
       }
       break;
 
