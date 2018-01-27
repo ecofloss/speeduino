@@ -278,6 +278,8 @@ void idleControl()
       break;
 
     case IAC_ALGORITHM_STEP_OL:    //Case 4 is open loop stepper control
+      readCTPS(); //debug only
+      readIPS(); //debug only
       //First thing to check is whether there is currently a step going on and if so, whether it needs to be turned off
       if( (checkForStepping() == false) && (isStepperHomed() == true) ) //Check that homing is complete and that there's not currently a step already taking place. MUST BE IN THIS ORDER!
       {
@@ -330,7 +332,7 @@ void idleControl()
       if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
       {
         //Currently cranking. Use the cranking table
-        if ( (currentStatus.CTPS==false) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
+        if ( (currentStatus.CTPS == HIGH) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
         {
           readIPS();
           currentStatus.idleDuty = table2D_getValue(&iacCrankDutyTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees

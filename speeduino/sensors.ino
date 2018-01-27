@@ -192,12 +192,12 @@ void readIPS()//Idle Potentiometer Sensor
     analogRead(pinIPS);
     byte tempIPS = fastMap1023toX(analogRead(pinIPS), 255); //Get the current raw IPS ADC value and map it into a byte
     currentStatus.ipsADC = ADC_FILTER(tempIPS, ADCFILTER_IPS, currentStatus.ipsADC);
-    currentStatus.IPS = map(currentStatus.ipsADC, 0, 0, 0, 100); //Take the raw TPS ADC value and convert it into a TPS% based on the calibrated values
+    currentStatus.IPS = map(currentStatus.ipsADC, 0, 255, 0, 100); //Take the raw TPS ADC value and convert it into a TPS% based on the calibrated values
 }
 
-void readCTPS()//Idle Potentiometer Sensor
+void readCTPS()//Closed Throotle Position Sensor
 {
-    currentStatus.CTPS = digitalRead(pinCTPS);
+    currentStatus.CTPS = !digitalRead(pinCTPS);//If the switch is closed there are 0V (0 logical) and if the switch is open there are 5V (1 logical). Resistance PULL_UP
 }
 
 void readCLT()

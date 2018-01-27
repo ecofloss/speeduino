@@ -149,7 +149,7 @@ void setPinMapping(byte boardID)
       pinLaunch = 12; //Can be overwritten below
       pinFlex = 2; // Flex sensor (Must be external interrupt enabled)
       pinIPS = A15; //IPS input pin Idle Potentiometer Sensor
-      pinCTPS = 50; //The closed throttle position sensor pin
+      pinCTPS = 52; //The closed throttle position sensor pin
       
       #if defined(CORE_TEENSY)
         pinTrigger = 23;
@@ -599,7 +599,7 @@ void setPinMapping(byte boardID)
   pinMode(pinTrigger2, INPUT);
   pinMode(pinTrigger3, INPUT);
   pinMode(pinFlex, INPUT_PULLUP); //Standard GM / Continental flex sensor requires pullup
-  pinMode(pinCTPS, INPUT);
+  pinMode(pinCTPS, INPUT_PULLUP); //If the switch is closed there are 0V (0 logical) and if the switch is open there are 5V (1 logical). Resistance PULL_UP
   if (configPage3.lnchPullRes == true) {
     pinMode(pinLaunch, INPUT_PULLUP);
   }
