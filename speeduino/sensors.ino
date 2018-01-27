@@ -190,8 +190,9 @@ void readTPS()
 void readIPS()//Idle Potentiometer Sensor
 {
     analogRead(pinIPS);
-    byte tempIPS = fastMap1023toX(analogRead(pinIPS), 255); //Get the current raw TPS ADC value and map it into a byte
-    currentStatus.IPS = tempIPS;
+    byte tempIPS = fastMap1023toX(analogRead(pinIPS), 255); //Get the current raw IPS ADC value and map it into a byte
+    currentStatus.ipsADC = ADC_FILTER(tempIPS, ADCFILTER_IPS, currentStatus.ipsADC);
+    currentStatus.IPS = map(currentStatus.ipsADC, 0, 0, 0, 100); //Take the raw TPS ADC value and convert it into a TPS% based on the calibrated values
 }
 
 void readCTPS()//Idle Potentiometer Sensor

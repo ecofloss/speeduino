@@ -246,6 +246,7 @@ struct statuses {
   byte tpsADC; //0-255 byte representation of the TPS
   byte tpsDOT;
   byte IPS;//The current IPS reading
+  byte ipsADC; //0-255 byte representation of the TPS
   volatile byte CTPS;//Closed throttle position sensor
   volatile int rpmDOT;
   byte VE;
