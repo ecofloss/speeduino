@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <msq xmlns="http://www.msefi.com/:msq">
-<bibliography author="TunerStudio MS(Beta) 3.0.50.23 - EFI Analytics, Inc." tuneComment="" writeDate="Wed Jan 03 21:35:21 AEDT 2018"/>
+<bibliography author="TunerStudio MS Lite! 3.0.18 - EFI Analytics, Inc." tuneComment="" writeDate="Sat Jan 27 15:47:16 CET 2018"/>
 <versionInfo fileFormat="5.0" firmwareInfo="Speeduino+2017.12" nPages="10" signature="speeduino 201712"/>
 <page>
 <pcVariable name="tsCanId">"CAN ID 0"</pcVariable>
@@ -209,7 +209,7 @@
          71.0 
       </constant>
 <constant digits="0" name="UNALLOCATED_TOP_1" units="RAW">
-         255.0 
+         0.0 
       </constant>
 </page>
 <page number="2" size="288">
@@ -421,7 +421,7 @@
          145.0 
       </constant>
 <constant digits="0" name="UNALLOCATED_TOP_3" units="RAW">
-         255.0 
+         0.0 
       </constant>
 </page>
 <page number="4" size="288">
@@ -632,7 +632,7 @@
          44.0 
          76.0 
       </constant>
-<constant name="iacAlgorithm">"None"</constant>
+<constant name="iacAlgorithm">"PWM Open loop with IPS/CTPS"</constant>
 <constant name="iacStepTime">"3"</constant>
 <constant name="iacChannels">"1"</constant>
 <constant name="iacPWMdir">"Normal"</constant>
@@ -861,6 +861,22 @@
 <constant name="caninput_sel13">"Off"</constant>
 <constant name="caninput_sel14">"Off"</constant>
 <constant name="caninput_sel15">"Off"</constant>
+<constant name="caninput_source_can_address0">"0x100"</constant>
+<constant name="caninput_source_can_address1">"0x100"</constant>
+<constant name="caninput_source_can_address2">"0x100"</constant>
+<constant name="caninput_source_can_address3">"0x100"</constant>
+<constant name="caninput_source_can_address4">"0x100"</constant>
+<constant name="caninput_source_can_address5">"0x100"</constant>
+<constant name="caninput_source_can_address6">"0x100"</constant>
+<constant name="caninput_source_can_address7">"0x100"</constant>
+<constant name="caninput_source_can_address8">"0x100"</constant>
+<constant name="caninput_source_can_address9">"0x100"</constant>
+<constant name="caninput_source_can_address10">"0x100"</constant>
+<constant name="caninput_source_can_address11">"0x100"</constant>
+<constant name="caninput_source_can_address12">"0x100"</constant>
+<constant name="caninput_source_can_address13">"0x100"</constant>
+<constant name="caninput_source_can_address14">"0x100"</constant>
+<constant name="caninput_source_can_address15">"0x100"</constant>
 <constant name="caninput_source_start_byte0">"7"</constant>
 <constant name="caninput_source_start_byte1">"7"</constant>
 <constant name="caninput_source_start_byte2">"7"</constant>
@@ -1158,7 +1174,7 @@
          0.0 
       </constant>
 <constant digits="0" name="UNALLOCATED_TOP_9" units="RAW">
-         255.0 
+         0.0 
       </constant>
 </page>
 <settings Comment="These setting are only used if this msq is opened without a project.">

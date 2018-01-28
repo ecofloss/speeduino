@@ -242,6 +242,9 @@ void idleControl()
       break;
 
     case IAC_ALGORITHM_PWM_OL:      //Case 2 is PWM open loop
+      readCTPS(); //only for debug IPS/CTPS in PWM_OL option
+      readIPS(); //only for debug IPS/CTPS in PWM_OL option
+      
       //Check for cranking pulsewidth
       if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
       {
@@ -328,23 +331,23 @@ void idleControl()
 
     case IAC_ALGORITHM_PWM_OL_IPS_CTPS:      //Case 6 is PWM open loop with IPS/CTPS
       readCTPS();
+      readIPS();
       //Check for cranking pulsewidth
       if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
       {
         //Currently cranking. Use the cranking table
         if ( (currentStatus.CTPS == HIGH) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
         {
-          readIPS();
           currentStatus.idleDuty = table2D_getValue(&iacCrankDutyTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
           if (2,5>currentStatus.IPS)
             {
-              idle_pwm_target_value = percentage(currentStatus.idleDuty+10, idle_pwm_max_count);
+              idle_pwm_target_value = percentage(currentStatus.idleDuty+5, idle_pwm_max_count);
             }
           else
             {
               if (2,5<currentStatus.IPS)
                 {
-                  idle_pwm_target_value = percentage(currentStatus.idleDuty-10, idle_pwm_max_count);        
+                  idle_pwm_target_value = percentage(currentStatus.idleDuty-5, idle_pwm_max_count);        
                 }
               else
                 {
@@ -357,19 +360,18 @@ void idleControl()
       else
       {
         //Standard running
-        if ( (currentStatus.CTPS==false) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
+        if ( (currentStatus.CTPS== HIGH) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
         {
-          readIPS();
           currentStatus.idleDuty = table2D_getValue(&iacPWMTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
           if (2,5>currentStatus.IPS)
             {
-              idle_pwm_target_value = percentage(currentStatus.idleDuty+10, idle_pwm_max_count);
+              idle_pwm_target_value = percentage(currentStatus.idleDuty+5, idle_pwm_max_count);
             }
           else
             {
               if (2,5<currentStatus.IPS)
                 {
-                  idle_pwm_target_value = percentage(currentStatus.idleDuty-10, idle_pwm_max_count);        
+                  idle_pwm_target_value = percentage(currentStatus.idleDuty-5, idle_pwm_max_count);        
                 }
               else
                 {
