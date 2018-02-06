@@ -192,17 +192,6 @@ void initialiseIdle()
 
     case IAC_ALGORITHM_PWM_OL_IPS_CTPS:
       //Case 6 is PWM open loop with IPS/CTPS
-      iacPWMTable.xSize = 10;
-      iacPWMTable.valueSize = SIZE_BYTE;
-      iacPWMTable.values = configPage3.iacOLPWMVal;
-      iacPWMTable.axisX = configPage3.iacBins;
-
-
-      iacCrankDutyTable.xSize = 4;
-      iacCrankDutyTable.valueSize = SIZE_BYTE;
-      iacCrankDutyTable.values = configPage3.iacCrankDuty;
-      iacCrankDutyTable.axisX = configPage3.iacCrankBins;
-
       idle_pin_port = portOutputRegister(digitalPinToPort(pinIdle1));
       idle_pin_mask = digitalPinToBitMask(pinIdle1);
       idle2_pin_port = portOutputRegister(digitalPinToPort(pinIdle2));
@@ -212,7 +201,7 @@ void initialiseIdle()
       #else
         idle_pwm_max_count = 1000000L / (16 * configPage3.idleFreq * 2); //Converts the frequency in Hz to the number of ticks (at 16uS) it takes to complete 1 cycle. Note that the frequency is divided by 2 coming from TS to allow for up to 512hz
       #endif
-      enableIdle();
+      currentStatus.idleDuty = 24;      
       break;
 
     default:
@@ -332,55 +321,30 @@ void idleControl()
     case IAC_ALGORITHM_PWM_OL_IPS_CTPS:      //Case 6 is PWM open loop with IPS/CTPS
       readCTPS();
       readIPS();
-      //Check for cranking pulsewidth
-      if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
+      
+      if ( currentStatus.CTPS == HIGH )
       {
-        //Currently cranking. Use the cranking table
-        if ( (currentStatus.CTPS == HIGH) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
+        if ( currentStatus.IPS < IPS_TARGET )
         {
-          currentStatus.idleDuty = table2D_getValue(&iacCrankDutyTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
-          if (2,5>currentStatus.IPS)
-            {
-              idle_pwm_target_value = percentage(currentStatus.idleDuty+5, idle_pwm_max_count);
-            }
-          else
-            {
-              if (2,5<currentStatus.IPS)
-                {
-                  idle_pwm_target_value = percentage(currentStatus.idleDuty-5, idle_pwm_max_count);        
-                }
-              else
-                {
-                  idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
-                }
-            }
-          idleOn = true;
-        }  
+          currentStatus.idleDuty++;
+          if ( currentStatus.idleDuty>30 ) { currentStatus.idleDuty = 30; } //Security measure. With duty 30 the engine idle at 2200 rpm
+        }
+        else
+        {
+          if ( currentStatus.IPS > IPS_TARGET ) 
+          {
+            currentStatus.idleDuty--;
+            if ( currentStatus.idleDuty<5 ) { currentStatus.idleDuty = 5; } //Security measure.
+          }
+        }
+        idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+        enableIdle();
       }
       else
       {
-        //Standard running
-        if ( (currentStatus.CTPS== HIGH) || (currentStatus.TPS<6) )//Closed throttle or TPS close to 0
-        {
-          currentStatus.idleDuty = table2D_getValue(&iacPWMTable, currentStatus.coolant + CALIBRATION_TEMPERATURE_OFFSET); //All temps are offset by 40 degrees
-          if (2,5>currentStatus.IPS)
-            {
-              idle_pwm_target_value = percentage(currentStatus.idleDuty+5, idle_pwm_max_count);
-            }
-          else
-            {
-              if (2,5<currentStatus.IPS)
-                {
-                  idle_pwm_target_value = percentage(currentStatus.idleDuty-5, idle_pwm_max_count);        
-                }
-              else
-                {
-                  idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
-                }  
-            }
-          idleOn = true;
-        }
+        disableIdle();
       }
+      
       break;
 
     default:

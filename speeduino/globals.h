@@ -151,6 +151,8 @@
 #define FUEL_PUMP_ON() *pump_pin_port |= (pump_pin_mask)
 #define FUEL_PUMP_OFF() *pump_pin_port &= ~(pump_pin_mask)
 
+#define IPS_TARGET   92 //This is the IPS ADC value with which the engine idle at 850 rpm
+
 const char TSfirmwareVersion[] = "Speeduino 2016.09";
 
 const byte data_structure_version = 2; //This identifies the data structure when reading / writing.
