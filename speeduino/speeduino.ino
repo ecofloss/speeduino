@@ -789,7 +789,9 @@ void loop()
     {
       BIT_CLEAR(TIMER_mask, BIT_TIMER_15HZ);
       readTPS(); //TPS reading to be performed every 32 loops (any faster and it can upset the TPSdot sampling time)
-
+      readIPS(); //IPS reading 32 times per second
+      readCTPS(); //CTPS reading 32 times per second
+      
       //Check for launching/flat shift (clutch) can be done around here too
       previousClutchTrigger = clutchTrigger;
       if(configPage3.launchHiLo) { clutchTrigger = digitalRead(pinLaunch); }

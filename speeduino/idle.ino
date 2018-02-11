@@ -201,7 +201,9 @@ void initialiseIdle()
       #else
         idle_pwm_max_count = 1000000L / (16 * configPage3.idleFreq * 2); //Converts the frequency in Hz to the number of ticks (at 16uS) it takes to complete 1 cycle. Note that the frequency is divided by 2 coming from TS to allow for up to 512hz
       #endif
-      currentStatus.idleDuty = 24;      
+      currentStatus.idleDuty = 34;      
+      currentStatus.idleLoad = 34;
+      enableIdle();
       break;
 
     default:
@@ -230,10 +232,7 @@ void idleControl()
       else if (idleOn) { digitalWrite(pinIdle1, LOW); idleOn = false; }
       break;
 
-    case IAC_ALGORITHM_PWM_OL:      //Case 2 is PWM open loop
-      readCTPS(); //only for debug IPS/CTPS in PWM_OL option
-      readIPS(); //only for debug IPS/CTPS in PWM_OL option
-      
+    case IAC_ALGORITHM_PWM_OL:      //Case 2 is PWM open loop   
       //Check for cranking pulsewidth
       if( BIT_CHECK(currentStatus.engine, BIT_ENGINE_CRANK) )
       {
@@ -270,8 +269,6 @@ void idleControl()
       break;
 
     case IAC_ALGORITHM_STEP_OL:    //Case 4 is open loop stepper control
-      readCTPS(); //debug only
-      readIPS(); //debug only
       //First thing to check is whether there is currently a step going on and if so, whether it needs to be turned off
       if( (checkForStepping() == false) && (isStepperHomed() == true) ) //Check that homing is complete and that there's not currently a step already taking place. MUST BE IN THIS ORDER!
       {
@@ -319,15 +316,12 @@ void idleControl()
       break;
 
     case IAC_ALGORITHM_PWM_OL_IPS_CTPS:      //Case 6 is PWM open loop with IPS/CTPS
-      readCTPS();
-      readIPS();
-      
       if ( currentStatus.CTPS == HIGH )
       {
         if ( currentStatus.IPS < IPS_TARGET )
         {
           currentStatus.idleDuty++;
-          if ( currentStatus.idleDuty>30 ) { currentStatus.idleDuty = 30; } //Security measure. With duty 30 the engine idle at 2200 rpm
+          if ( currentStatus.idleDuty>34 ) { currentStatus.idleDuty = 34; } //Security measure. With duty 30 the engine idle at 2200 rpm
         }
         else
         {
@@ -338,11 +332,15 @@ void idleControl()
           }
         }
         idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+        currentStatus.idleLoad = currentStatus.idleDuty >> 1;
         enableIdle();
       }
       else
       {
-        disableIdle();
+        currentStatus.idleDuty=40;
+        idle_pwm_target_value = percentage(currentStatus.idleDuty, idle_pwm_max_count);
+        currentStatus.idleLoad = currentStatus.idleDuty >> 1;
+        //disableIdle();
       }
       
       break;
